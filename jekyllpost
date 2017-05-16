@@ -1,0 +1,85 @@
+#!/bin/bash
+
+DATE=$(date '+%Y-%m-%d')
+DATETIME=$(date '+%Y-%m-%d %H:%M')
+POSTS_DIR="YOUR-JEKYLL-POST-DIR"
+DRAFTS_DIR="YOUR-JEKYLL-DRAFTS-DIR"
+
+for arg in "$@"; do
+    case $arg in
+        -c|--category)
+            # Add a category (optional)
+            CATEGORY="$2"
+            shift
+        ;;
+
+        -d|--draft)
+            # The post is a draft
+            POSTS_DIR=$DRAFTS_DIR
+            shift
+        ;;
+
+        -i|--images-dir)
+            # Create a new directory for images
+            CREATE_IMAGES_DIR="YES"
+            shift
+        ;;
+
+        -l|--layout)
+            # Change the default layout
+            LAYOUT=$2
+            shift
+        ;;
+
+        -t|--title)
+            # Post title
+            TITLE="$2"
+            shift
+        ;;
+
+        *)
+            # Unrecognized parameter (skip)
+            shift
+        ;;
+    esac
+done
+
+if [ "$TITLE" ]; then
+    # Create the directory if not exsts
+    if [ ! -d "$POSTS_DIR" ]; then
+        mkdir "$POSTS_DIR"
+    fi
+
+    # Prepare the slug
+    SLUG=$TITLE
+    SLUG="$(echo -n "$SLUG" | sed -e 's/[^[:alnum:]]/-/g')"
+    SLUG="$(echo -n "$SLUG" | tr -s '-')"
+    SLUG="$(echo -n "$SLUG" | tr A-Z a-z)"
+    SLUG="$(echo -n "$SLUG" | sed -e 's/^[\-]*//' -e 's/[\-]*$//')"
+
+    # Prepare the file name
+    FILE="${POSTS_DIR}${DATE}-${SLUG}.md"
+
+    # Check if file exists
+    if [ ! -f "$FILE" ]; then
+        echo "File: $FILE"
+        echo "---" >> $FILE
+        [ "$LAYOUT" ] && echo "layout: $LAYOUT" >> $FILE
+        [ "$CATEGORY" ] && echo "category: $CATEGORY" >> $FILE
+        echo "title: \"$TITLE\"" >> $FILE
+        echo "date: $DATETIME" >> $FILE
+        echo "---" >> $FILE
+    else
+        echo "File \"$FILE\" alredy exists!"
+        echo "Try a different title."
+    fi
+else
+    echo "The title is required!"
+    echo "Usage:"
+    echo "    $0 -t title"
+    echo "Optional parameters:"
+    echo "    -c <category name>        Category"
+    echo "    -d                        Draft"
+    echo "    -i                        Images directory"
+    echo "    -l <layout name>          Layout"
+fi
