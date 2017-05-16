@@ -5,3 +5,4 @@ wget https://raw.githubusercontent.com/deadcodeca/jekyllpost/master/jekyllpost
 nano jekyllpost and fill out the 2 settings
 chmod +x jekyllpost
 mv jekyllpost /usr/bin/
+jekyllpost -c category -t "the title!"
